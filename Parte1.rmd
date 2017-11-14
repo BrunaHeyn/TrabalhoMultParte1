@@ -25,6 +25,12 @@ dadosd <- dados[,2:8]
 ```
 
 
+#Introdução
+
+ Os dados foram obtidos do arquivo moscas.txt, extraído do site http://www.ime.unicamp.br/~cnaber/Moscas.txt. Este se refere à sete variáveis medidas em duas espécies das moscas chamadas bitting fly (Leptoconops carteri e Leptoconops torrens), sendo elas espécie (0 - torrens e 1- carteri), comprimento da asa, largura da asa, comprimento do terceiro palpo, largura do terceiro palpo, comprimento do quarto palpo, comprimento do 12º segmento da antena e comprimento do 13º segmento da antena. Para ser mais eficiente, renomearemos essas variáveis como sendo: Especie, C.Asa, L.Asa, C3p, L3p, C4p, C12a e C13a, respectivamente.
+
+ O objetivo do estudo é comparar as duas espécies de moscas com as demais variáveis de interesse para saber se há diferença entre esses dois grupos e, se houver, em que variáveis reside(m) essa(s) diferença(s).
+
 ```{r, plotanto os boxplots, echo=FALSE, fig.height=5, fig.cap="BoxPlots"}
 boxCAsa <- ggplot(dados, aes(Especie, C.Asa, group = Especie)) + 
   geom_boxplot() +theme_classic() +  scale_y_continuous("C.Asa")
