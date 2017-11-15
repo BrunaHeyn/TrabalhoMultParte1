@@ -12,8 +12,7 @@ library(gridExtra)
 library(ggplot2)
 library(xtable)
 library(GGally)
-setwd("C:/Users/naatr/Documents/Análise Multivariada/Trabalho/Parte1/TrabalhoMultParte1")
-dados <- read.table("moscas.csv", header = TRUE, sep = ";")
+dados <- read.table("C:/Users/Eduardo/Documents/GitHub/TrabalhoMultParte1/moscas.csv", header = TRUE, sep = ";")
 attach(dados)
 Especie <- ifelse( Especie == "Torrens", 0, 1)
 especie <- dados[,1]
@@ -253,6 +252,9 @@ vF <- (n0-nvar)*vF/((n0-1)*nvar)
 qqPlot(vF,dist="f",df1=nvar,df2=n0-nvar,col.lines=1,grid="FALSE",xlab="quantil da distribuição F",ylab="quantil da forma quadrática", main = "Especie Carteri") 
 ```
 
+A fim de comparar ambas as espécies, foi utilizado a metodologia MANOVA para testar se há diferença entre a média da espécie Torrens e Carteri. Quatro testes multivariados foram utilizados: Wilks, Pillai, Hotelling-Lawley e Roy, nas quais têm aproximação pela distribuição F. Para todos os testes constata-se que não há evidências para afirmar que as médias são iguais e, portanto, há o interesse em analisar cada variável separadamente para identificar onde reside a diferença.
+
+Para tal, foi utilizado o teste do tipo CBU=M. Considerando um nível de significância de 5%, conclui-se que quatro variáveis possuem as médias estatisticamente iguais em relação as duas espécies, sendo estas a largura da asa, largura do terceiro palpo, comprimento do 12º segmento da antena e comprimento do 13º segmento da antena. Para as demais, tem-se evidência que existe diferença entre as espécies de estudo.
 
 ```{r, MANOVA,  echo=FALSE, include=FALSE}
 nespecie <- ifelse (especie == "Torrens", 1,2)
