@@ -1,0 +1,136 @@
+---
+title: "Trabalho de Multivariada - Parte 1 Código "
+date: "13 de novembro de 2017"
+output: pdf_document
+---
+
+```{r setup, include= FALSE, echo= FALSE}
+library(MASS)
+library(ca)
+library(devtools)
+library(xtable)
+source("ACaux.r")
+```
+
+
+```{r, echo=FALSE}
+#Lendo e transferindo para uma tabela com os nomes das variáveis
+tabela_contigencia <- rbind(cbind(121,57,72,36,21),cbind(188,105,141,97,71),cbind(112,65,77,54,54),cbind(186,60,94,78,71))
+dimnames(tabela_contigencia) <- list(c("Boa","Fraco","Moderado","Debilitado"),c("A (alto)", "B","C","D","E (baixo)"))
+names(dimnames(tabela_contigencia)) <- c("Saúde Mental","Status Sócio-Economico do País")
+#xtable(tabela_contigencia)
+```
+
+\begin{table}[ht]
+\centering
+\caption{Tabela de contingência}
+\begin{tabular}{rrrrrr}
+  \hline
+ & A (alto) & B & C & D & E (baixo) \\ 
+  \hline
+Boa & 121.00 & 57.00 & 72.00 & 36.00 & 21.00 \\ 
+  Fraco & 188.00 & 105.00 & 141.00 & 97.00 & 71.00 \\ 
+  Moderado & 112.00 & 65.00 & 77.00 & 54.00 & 54.00 \\ 
+  Debilitado & 186.00 & 60.00 & 94.00 & 78.00 & 71.00 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+
+```{r, echo=FALSE}
+#Tabela de Proporções Estimadas 
+propcont <- prop.table(tabela_contigencia)*100
+#xtable(propcont)
+```
+
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrrrrr}
+  \hline
+ & A (alto) & B & C & D & E (baixo) \\ 
+  \hline
+Boa & 6.88 & 3.24 & 4.09 & 2.05 & 1.19 \\ 
+  Fraco & 10.68 & 5.97 & 8.01 & 5.51 & 4.03 \\ 
+  Moderado & 6.36 & 3.69 & 4.38 & 3.07 & 3.07 \\ 
+  Debilitado & 10.57 & 3.41 & 5.34 & 4.43 & 4.03 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+```{r, echo=FALSE}
+# Teste de chi-quadrado pra testar independência
+xtest <- chisq.test(tabela_contigencia)
+
+#p-valor menor que 0.05, ou seja, rejeitamos a hipóteses de independência das variáveis
+
+```
+
+
+```{r, echo=FALSE}
+# Inércia
+resultCA <- ca(tabela_contigencia) #names (result)
+inercia <- summary(resultCA)$scree  
+#xtable(inercia)
+
+perfil.linhas <- ACaux(tabela_contigencia)$m.R
+#xtable(perfil.linhas)
+perfil.colunas <- ACaux(tabela_contigencia)$m.C
+#xtable(perfil.colunas)
+```
+
+\begin{table}[ht]
+\centering
+\caption{Inércia}
+\begin{tabular}{rrrrr}
+  \hline
+ & V1 & values & values2 & values3 \\ 
+  \hline
+1 & 1.00 & 0.01 & 59.09 & 59.09 \\ 
+  2 & 2.00 & 0.01 & 35.88 & 94.96 \\ 
+  3 & 3.00 & 0.00 & 5.04 & 100.00 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+
+\begin{table}[ht]
+\centering
+\caption{Perfil das linhas x100}
+\begin{tabular}{rrrrrrr}
+  \hline
+ & A (alto) & B & C & D & E (baixo) & V6 \\ 
+  \hline
+1 & 0.39 & 0.19 & 0.23 & 0.12 & 0.07 & 1.00 \\ 
+  2 & 0.31 & 0.17 & 0.23 & 0.16 & 0.12 & 1.00 \\ 
+  3 & 0.31 & 0.18 & 0.21 & 0.15 & 0.15 & 1.00 \\ 
+  4 & 0.38 & 0.12 & 0.19 & 0.16 & 0.15 & 1.00 \\ 
+  5 & 0.34 & 0.16 & 0.22 & 0.15 & 0.12 & 1.00 \\ 
+   \hline
+\end{tabular}
+\end{table}
+
+
+\begin{table}[ht]
+\centering
+\caption{Perfil das linhas x100}
+\begin{tabular}{rrrrrrr}
+  \hline
+ & 1 & 2 & 3 & 4 & 5 & 6 \\ 
+  \hline
+Boa & 0.20 & 0.20 & 0.19 & 0.14 & 0.10 & 0.17 \\ 
+  Fraco & 0.31 & 0.37 & 0.37 & 0.37 & 0.33 & 0.34 \\ 
+  Moderado & 0.18 & 0.23 & 0.20 & 0.20 & 0.25 & 0.21 \\ 
+  Debilitado & 0.31 & 0.21 & 0.24 & 0.29 & 0.33 & 0.28 \\ 
+   & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 \\ 
+   \hline
+\end{tabular}
+\end{table}
+```{r, echo=FALSE}
+# Componentes
+resultFCA <- plot(resultCA, xlab = "componente 1", ylab = "componente 2")
+biplot(resultFCA$rows, resultFCA$cols, var.axes=FALSE, xlab="componente 1", ylab="componente 2", cex=1.2,ylim=c(-0.10,0.20),xlim=c(-0.15,0.20))
+abline(0, 0, lty=2)
+abline(v=0, lty=2)
+
+```
+
