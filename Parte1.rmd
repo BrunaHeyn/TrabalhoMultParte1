@@ -28,7 +28,7 @@ dadosd <- dados[,2:8]
 
  Os dados foram obtidos do arquivo moscas.txt, extraído do site http://www.ime.unicamp.br/~cnaber/Moscas.txt. Este se refere à sete variáveis medidas em duas espécies das moscas chamadas bitting fly (Leptoconops carteri e Leptoconops torrens), sendo elas espécie (0 - torrens e 1- carteri), comprimento da asa, largura da asa, comprimento do terceiro palpo, largura do terceiro palpo, comprimento do quarto palpo, comprimento do 12º segmento da antena e comprimento do 13º segmento da antena. Para ser mais eficiente, renomearemos essas variáveis como sendo: Especie, C.Asa, L.Asa, C3p, L3p, C4p, C12a e C13a, respectivamente.
 
- O objetivo do estudo é comparar as duas espécies de moscas com as demais variáveis de interesse para saber se há diferença entre esses dois grupos e, se houver, em que variáveis reside(m) essa(s) diferença(s).
+ O objetivo do estudo é comparar as duas espécies de moscas com as demais variáveis de interesse para saber se há diferença entre esses dois grupos e, se houver, em que variáveis reside(m) essa(s) diferença(s). Os principais métodos utilizados para este fim foram a aplicação da análise de variância multivariada(MANOVA) e testes de significâncias individuais para os parâmetros.
 
 ```{r, plotanto os boxplots, echo=FALSE, fig.height=5, fig.cap="BoxPlots"}
 boxCAsa <- ggplot(dados, aes(Especie, C.Asa, group = Especie)) + 
@@ -72,7 +72,7 @@ grid.arrange(boxCAsa, boxLAsa, boxC3p, boxL3p, boxC4p, boxC12a, boxC13a, nrow=3,
 ```
 
 
-```{r, histogramas, echo=FALSE, fig.width=15, fig.height=15, fig.cap="BoxPlots"}
+```{r, histogramas, echo=FALSE, fig.width=15, fig.height=15, fig.cap="Histogramas"}
 
 histC.Asa <- ggplot(dados,aes(C.Asa))+geom_histogram(breaks=seq(80, 115, by=5), color="black", fill="white")+facet_grid(~Especie)+theme_bw()
 
@@ -104,7 +104,7 @@ grid.arrange(histC.Asa,histL.Asa,histC3p,histL3p,histC4p,histC12a,histC13a,nrow=
 #}
 ```
 
-```{r, gráficos de dispersão, echo=FALSE, , fig.width=8, fig.height=7}
+```{r, gráficos de dispersão, echo=FALSE, , fig.width=8, fig.height=7, fig.cap= "Gráfico de dispersão"}
 my_cols <- c("black", "ivory4") 
 pairs(dados[,2:8],cex.axis=1.3,cex.lab=1.3,pch = c(16, 17)[as.numeric(Especie)],main="Gráfico de Dispersão", col=my_cols[dados$Especie], upper.panel = NULL)
 ```
@@ -128,6 +128,7 @@ xtable(mat.car)
 
 \begin{table}[ht]
 \centering
+\caption{Tabela de covariância e correlação}
 \begin{tabular}{rrrrrrrr}
   \hline
  & C.Asa & L.Asa & C3p & L3p & C4p & C12a & C13a \\ 
@@ -193,6 +194,7 @@ xtable(medresumo)
 
 \begin{table}[ht]
 \centering
+\caption{Medidas resumo}
 \begin{tabular}{rlrrrrrrrr}
   \hline
 Variável & Especie & Média & DP & Var & CV & Mínimo & Mediana & Máximo & n \\ 
@@ -232,7 +234,7 @@ for (j in 1:nvar)
 ```
 
 
-```{r, Envelopes para a forma quadrática (devem ter distribuição T² de Hotteling) e depois ele transforma na t,  fig.height=5, echo=FALSE}
+```{r, Envelopes para a forma quadrática (devem ter distribuição T² de Hotteling) e depois ele transforma na t,  fig.height=5, echo=FALSE, fig.cap="Gráfico de quantil da distribuição F para as duas espécies"}
 par(mfrow=c(1,2))
 # Especie Torrens
 vmu <- apply(mx[especie == "Torrens",],2,mean)
@@ -241,7 +243,7 @@ n0 <- nrow(mx[especie == "Torrens",])
 mmu <- t(matrix(t(vmu),nvar,n0))
 vF <- apply(((mx-vmu)*(mx-vmu)%*%solve(s2)),1,sum)
 vF <- (n0-nvar)*vF/((n0-1)*nvar) #transformando na distribuição F
-qqPlot(vF,dist="f",df1=nvar,df2=n0-nvar,col.lines=1,grid="FALSE",xlab="quantil da distribuição F",ylab="quantil da forma quadrática", main = "Especie Torrens")
+qqPlot(vF,dist="f",df1=nvar,df2=n0-nvar,col.lines=1,grid="FALSE",xlab="quantil da distribuição F",ylab="quantil da forma quadrática", main = "Torrens")
 # Especie Carteri
 vmu <- apply(mx[especie == "Carteri",],2,mean)
 s2 <- cov(mx[especie == "Carteri",])
@@ -249,7 +251,7 @@ n0 <- nrow(mx[especie == "Carteri",])
 mmu <- t(matrix(t(vmu),nvar,n0))
 vF <- apply(((mx-vmu)*(mx-vmu)%*%solve(s2)),1,sum)
 vF <- (n0-nvar)*vF/((n0-1)*nvar)
-qqPlot(vF,dist="f",df1=nvar,df2=n0-nvar,col.lines=1,grid="FALSE",xlab="quantil da distribuição F",ylab="quantil da forma quadrática", main = "Especie Carteri") 
+qqPlot(vF,dist="f",df1=nvar,df2=n0-nvar,col.lines=1,grid="FALSE",xlab="quantil da distribuição F",ylab="quantil da forma quadrática", main = "Carteri") 
 ```
 
 A fim de comparar ambas as espécies, foi utilizado a metodologia MANOVA para testar se há diferença entre a média da espécie Torrens e Carteri. Quatro testes multivariados foram utilizados: Wilks, Pillai, Hotelling-Lawley e Roy, nas quais têm aproximação pela distribuição F. Para todos os testes constata-se que não há evidências para afirmar que as médias são iguais e, portanto, há o interesse em analisar cada variável separadamente para identificar onde reside a diferença.
@@ -315,6 +317,7 @@ aux <- summary.aov(m.ajuste)
 
 \begin{table}[ht]
 \centering
+\caption{MANOVA}
 \begin{tabular}{rrrrrrrr}
   \hline
   Estatística & Valor & Aprox. Dist. F & P-Valor \\ 
@@ -402,8 +405,9 @@ TesteF.CBU.M(fit.model,m.Sigma.P,p,G,m.C,m.U,m.M)
 ```
 
 
-\begin{table}[ht]
+\begin{table}[h!]
 \centering
+\caption{Teste individual de nulidade das médias entre as espécies}
 \begin{tabular}{rlrrrrrrrr}
   \hline
   Variável & Estatística & p-valor \\ 
@@ -419,7 +423,7 @@ TesteF.CBU.M(fit.model,m.Sigma.P,p,G,m.C,m.U,m.M)
 \end{tabular}
 \end{table}
 
-```{r, análise de resíduos, fig.height=5, echo=FALSE}
+```{r, fig.height=5, echo=FALSE, fig.cap="Gráfico de diagnóstico da variável comprimento da asa"}
 # resíduos ordinários
 m.residuo <- m.ajuste$residuals
 m.X <- as.matrix(model.matrix(m.ajuste))
@@ -444,7 +448,9 @@ abline(0,0,lty=2)
 hist(m.residuo[,1],probability=TRUE,xlab="resíduo studentizado",main="",ylab="densidade")
 
 qqPlot((m.residuo[,1]),dist="norm",mean=0,sd=1,col.lines=1,grid="FALSE",xlab="quantil da N(0,1)",ylab=paste("quantil da distribuição do resíduo studentizado"),cex=1.2,id.cex=1.2)
+```
 
+```{r, fig.height=5, echo=FALSE,fig.cap="Gráfico de diagnóstico da variável largura da asa"}
 # Largura da Asa
 par(mfrow =c(2,2))
 plot(m.residuo[,2],ylim=c(min(-3,min(m.residuo[,2])),max(3,max(m.residuo[,2]))),xlab="índice",ylab="resíduo studentizado")
@@ -460,7 +466,9 @@ abline(0,0,lty=2)
 hist(m.residuo[,2],probability=TRUE,xlab="resíduo studentizado",main="",ylab="densidade")
 
 qqPlot((m.residuo[,2]),dist="norm",mean=0,sd=1,col.lines=1,grid="FALSE",xlab="quantil da N(0,1)",ylab=paste("quantil da distribuição do resíduo studentizado"),cex=1.2,id.cex=1.2)
+```
 
+```{r, fig.height=5, echo=FALSE,fig.cap="Gráfico de diagnóstico da variável comprimento do terceiro palpo"}
 # Comprimento do 3 Palpo
 par(mfrow =c(2,2))
 plot(m.residuo[,3],ylim=c(min(-3,min(m.residuo[,3])),max(3,max(m.residuo[,3]))),xlab="índice",ylab="resíduo studentizado")
@@ -476,7 +484,9 @@ abline(0,0,lty=2)
 hist(m.residuo[,3],probability=TRUE,xlab="resíduo studentizado",main="",ylab="densidade")
 
 qqPlot((m.residuo[,3]),dist="norm",mean=0,sd=1,col.lines=1,grid="FALSE",xlab="quantil da N(0,1)",ylab=paste("quantil da distribuição do resíduo studentizado"),cex=1.2,id.cex=1.2)
+```
 
+```{r, fig.height=5, echo=FALSE,fig.cap="Gráfico de diagnóstico da variável largura do 3º palpo"}
 # Largura do 3 Palpo
 par(mfrow =c(2,2))
 plot(m.residuo[,4],ylim=c(min(-3,min(m.residuo[,4])),max(3,max(m.residuo[,4]))),xlab="índice",ylab="resíduo studentizado")
@@ -492,7 +502,9 @@ abline(0,0,lty=2)
 hist(m.residuo[,4],probability=TRUE,xlab="resíduo studentizado",main="Histograma dos resíduos",ylab="densidade")
 
 qqPlot((m.residuo[,4]),dist="norm",mean=0,sd=1,col.lines=1,grid="FALSE",xlab="quantil da N(0,1)",ylab=paste("quantil da distribuição do resíduo studentizado"),cex=1.2,id.cex=1.2)
+```
 
+```{r, fig.height=5, echo=FALSE,fig.cap="Gráfico de diagnóstico da variável comprimento do 2º palpo"}
 # Comprimento do 2 Palpo
 par(mfrow =c(2,2))
 plot(m.residuo[,5],ylim=c(min(-3,min(m.residuo[,5])),max(3,max(m.residuo[,5]))),xlab="índice",ylab="resíduo studentizado")
@@ -508,7 +520,9 @@ abline(0,0,lty=2)
 hist(m.residuo[,5],probability=TRUE,xlab="resíduo studentizado",main="Histograma dos resíduos",ylab="densidade")
 
 qqPlot((m.residuo[,5]),dist="norm",mean=0,sd=1,col.lines=1,grid="FALSE",xlab="quantil da N(0,1)",ylab=paste("quantil da distribuição do resíduo studentizado"),cex=1.2,id.cex=1.2)
+```
 
+```{r, fig.height=5, echo=FALSE,fig.cap="Gráfico de diagnóstico da variável comprimento da do 12º segmento da antena"}
 # Comprimento do 12segmento da antena
 par(mfrow =c(2,2))
 plot(m.residuo[,6],ylim=c(min(-3,min(m.residuo[,6])),max(3,max(m.residuo[,6]))),xlab="índice",ylab="resíduo studentizado")
@@ -524,7 +538,9 @@ abline(0,0,lty=2)
 hist(m.residuo[,6],probability=TRUE,xlab="resíduo studentizado",main="Histograma dos resíduos",ylab="densidade")
 
 qqPlot((m.residuo[,6]),dist="norm",mean=0,sd=1,col.lines=1,grid="FALSE",xlab="quantil da N(0,1)",ylab=paste("quantil da distribuição do resíduo studentizado"),cex=1.2,id.cex=1.2)
+```
 
+```{r,fig.height=5, echo=FALSE,fig.cap="Gráfico de diagnóstico da variável comprimento do 13º segmento da antena"}
 # Comprimento do 13 segmento da antena
 par(mfrow =c(2,2))
 plot(m.residuo[,7],ylim=c(min(-3,min(m.residuo[,7])),max(3,max(m.residuo[,7]))),xlab="índice",ylab="resíduo studentizado")
