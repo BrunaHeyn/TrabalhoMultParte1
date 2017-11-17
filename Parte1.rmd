@@ -336,7 +336,7 @@ fit.model <- lm(as.matrix(dados[2:8]) ~ Especie)
 fit1 <- summary(fit.model)
 ```
 
-```{r, echo=FALSE, fig.cap="Medidas preditas pelo modelo e seus intervalos de confiança"}
+```{r, echo=FALSE, fig.cap="Medidas preditas pelo modelo e seus intervalos de confiança", warning=FALSE}
 par(mfrow = c(2,2))
 plotmeans(dados$C.Asa ~ dados$Especie, connect = FALSE, xlab = "Espécies", ylab = "Comprimento da asa", n.label = FALSE)
 plotmeans(dados$L.Asa ~ dados$Especie, connect = FALSE, xlab = "Espécies", ylab = "Largura da asa", n.label = FALSE)
@@ -624,6 +624,7 @@ cp3 <- cbind((result.cp.cor$scores)[,3])
 especie <- as.character(dadosaux[,1]) 
 mycolors <- c("red", "blue")
 plot(data.frame(cp1,cp2,cp3), col=mycolors[factor(especie)], pch = 16)
+object = prcomp(dados[,2:8], center = T, scale. = T)
 ```
 
 ```{r, echo=FALSE, fig.cap="Boxplots das componentes principais 1, 2 e 3"}

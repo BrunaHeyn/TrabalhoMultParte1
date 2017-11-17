@@ -2,6 +2,10 @@
 title: "Trabalho de Multivariada - Parte 1 Código "
 date: "13 de novembro de 2017"
 output: pdf_document
+header-includes:
+  - \usepackage{booktabs}
+  - \usepackage{multirow}
+  - \usepackage[portuguese]{babel}
 ---
 
 ```{r setup, include= FALSE, echo= FALSE}
@@ -9,8 +13,15 @@ library(MASS)
 library(ca)
 library(devtools)
 library(xtable)
-source("ACaux.r")
+source("C:/Users/Eduardo/Documents/GitHub/TrabalhoMultParte1/ACaux.r")
 ```
+
+#Introdução
+
+Há o interesse em estudar a relação existente entre o status socioeconômico dos pais com a condição de saúde mental de 1760 indivíduos. A saúde mental de cada indivíduo foi classificada em quatro possíveis níveis, “Boa”, “Presença fraca de sintomas”, “Presença moderada de sintomas” e “Debilitado”, e o status socioeconômico de seus pais foi classificado em cinco níveis, de “A” até “E”, sendo o “A” o mais alto e “E” o mais baixo.
+
+
+O objetivo original desta análise é quantificar o grau de associação das variáveis categorizadas, que estão na tabela de contingência. Para testar a hipótese de independência entre as variáveis, será usado um teste Qui-Quadrado. Caso seja identificada dependência, será realizada uma análise de perfil de linhas e colunas, para identificar se há relação entre as variáveis. Será usada as metodologias de análise de correspondência. Os resultados obtidos serão expostos em gráficos e tabelas, os quais serão úteis na análise da estrutura de dependência entre os níveis das variáveis, status socioeconômico e saúde mental, identificando como é a relação entre as variáveis. Todas as análise foram realizadas via pacote R versão 3.2.1 (R core team (2015))
 
 
 ```{r, echo=FALSE}
@@ -21,18 +32,25 @@ names(dimnames(tabela_contigencia)) <- c("Saúde Mental","Status Sócio-Economic
 #xtable(tabela_contigencia)
 ```
 
-\begin{table}[ht]
+#Análise Descritiva
+
+A tabela de contingência dos dados é apresentada na tabela 1 e o modelo probabilístico gerador desta é uma multinomial, uma vez que o total geral (1760 indivíduos) foi fixado e as demais quantidades (total das linhas, total das colunas e total de cada entrada da tabela) foram obtidas somente ao final da classificação de todas as observações.
+
+A tabela 1 contem 1760 observações classificadas em 20 categorias, as quais provém da combinação de 5 categorias referentes ao status sócio econômico do pais (dispostas nas linhas) e 4 categorias referentes à saúde mental dos indivíduos (dispostas nas colunas).
+
+
+\begin{table}[ht] 
 \centering
-\caption{Tabela de contingência}
-\begin{tabular}{rrrrrr}
-  \hline
- & A (alto) & B & C & D & E (baixo) \\ 
-  \hline
-Boa & 121.00 & 57.00 & 72.00 & 36.00 & 21.00 \\ 
-  Fraco & 188.00 & 105.00 & 141.00 & 97.00 & 71.00 \\ 
-  Moderado & 112.00 & 65.00 & 77.00 & 54.00 & 54.00 \\ 
-  Debilitado & 186.00 & 60.00 & 94.00 & 78.00 & 71.00 \\ 
-   \hline
+\caption{Tabela de contingência} 
+\begin{tabular}{lccccc}
+     \toprule
+     \multirow{2}{*}{Saúde mental} & \multicolumn{5}{c}{Status sócio-econômico dos pais} \\ \cmidrule{2-6}
+     & A (alto) & B & C & D & E (baixo)\\ \midrule
+     Boa & 121 & 57 & 72 & 36 & 21 \\
+     Presença fraca de sintomas & 188 & 105 & 141 & 97 & 71 \\
+     Presença moderada de sintomas & 112 & 65 & 77 & 54 & 54 \\
+     Debilitado & 186 & 60 & 94 & 78 & 71 \\
+     \bottomrule
 \end{tabular}
 \end{table}
 
@@ -43,19 +61,33 @@ propcont <- prop.table(tabela_contigencia)*100
 #xtable(propcont)
 ```
 
-\begin{table}[ht]
+\begin{table}[ht] 
 \centering
-\begin{tabular}{rrrrrr}
-  \hline
- & A (alto) & B & C & D & E (baixo) \\ 
-  \hline
-Boa & 6.88 & 3.24 & 4.09 & 2.05 & 1.19 \\ 
-  Fraco & 10.68 & 5.97 & 8.01 & 5.51 & 4.03 \\ 
-  Moderado & 6.36 & 3.69 & 4.38 & 3.07 & 3.07 \\ 
-  Debilitado & 10.57 & 3.41 & 5.34 & 4.43 & 4.03 \\ 
-   \hline
+\caption{Tabela de proporções} 
+\begin{tabular}{lccccc}
+     \toprule
+     \multirow{2}{*}{Saúde mental} & \multicolumn{5}{c}{Status sócio-econômico dos pais} \\ \cmidrule{2-6}
+     & A (alto) & B & C & D & E (baixo)\\ \midrule
+     Boa & 6,88 & 3,24 & 4,09 & 2,05 & 1,19 \\
+     Presença fraca de sintomas & 10,68 & 5,97 & 8,01 & 5,51 & 4,03 \\
+     Presença moderada de sintomas & 6,36 & 3,69 & 4,38 & 3,07 & 3,07 \\
+     Debilitado & 10,57 & 3,41 & 5,34 & 4,43 & 4,03 \\
+     \bottomrule
 \end{tabular}
 \end{table}
+
+
+A fim de testar a existência ou não de independência entre as variáveis, foi realizado um teste qui-quadrado usual, considerando um nível $\alpha=0,05$, no qual foram consideradas as seguintes hipóteses:
+
+\begin{center}
+$H_0 : p_{ij} = p_{i.}Xp_{.j}$ para todo i,j vs.
+$H1 : p_{ij} \neq p_{i.}xp_{j.}$ para algum par i,j
+\end{center}
+
+Onde $p_{ij}$ é a a proporção de observações pertencentes simultaneamente às categorias i da variável “saúde mental” e j da variável “status socioeconômico”, $p_i$ é a proporção de observações pertencentes à categoria i da variável “saúde mental”; $p_j$ é a proporção de observações pertencentes à categoria j da variável “status socioeconômico”.
+
+Como resultado do supracitado teste obteve-se o valor 31,18 para a estatística do teste (Q) e o p-valor=0,0018, que menor que o nível de significância considerando (p-valor < 0,05) e portanto concluímos que não temos evidências suficientes para afirmar que as variáveis “saúde mental” e “status sócio econômico” são independentes.
+
 
 ```{r, echo=FALSE}
 # Teste de chi-quadrado pra testar independência
@@ -65,72 +97,119 @@ xtest <- chisq.test(tabela_contigencia)
 
 ```
 
+\begin{table}[ht] 
+\centering
+\caption{Teste qui-quadrado de independência entre variáveis} 
+\begin{tabular}{ccc}
+     \toprule
+     Estatística $\chi^2$ & Graus de liberdade & p-valor \\ \midrule
+     31,18 & 12 & 0,001 \\
+     \bottomrule
+\end{tabular}
+\end{table}
+
+
+\begin{table}[ht]
+\centering
+\caption{Rankeamento da saúde mental e do status socioeconômico dos pais}
+\label{my-label}
+\begin{tabular}{lllllll}
+\hline
+\multirow{2}{*}{Saúde mental} & \multicolumn{6}{l}{Status socioeconômicos dos pais} \\ \cline{2-7} 
+                              & A(alto)  & B     & C     & D     & E(baixo)  & Rank \\ \hline
+Boa                           & 6,88     & 3,24  & 4,09  & 2,05  & 1,19      & 4    \\
+Presença fraca de sintomas    & 10,68    & 5,97  & 8,01  & 5,51  & 4,03      & 1    \\
+Presença moderada de sintomas & 6,36     & 3,69  & 4,38  & 3,07  & 3,07      & 3    \\
+Debilitado                    & 10,57    & 3,41  & 5,34  & 4,43  & 4,03      & 2    \\ \hline
+Rank                          & 1        & 3     & 2     & 4     & 5         &      \\ \hline
+\end{tabular}
+\end{table}
 
 ```{r, echo=FALSE}
-# Inércia
-resultCA <- ca(tabela_contigencia) #names (result)
-inercia <- summary(resultCA)$scree  
-#xtable(inercia)
-
 perfil.linhas <- ACaux(tabela_contigencia)$m.R
 #xtable(perfil.linhas)
 perfil.colunas <- ACaux(tabela_contigencia)$m.C
 #xtable(perfil.colunas)
 ```
 
-\begin{table}[ht]
+
+\begin{table}[h!]
 \centering
-\caption{Inércia}
-\begin{tabular}{rrrrr}
-  \hline
- & V1 & values & values2 & values3 \\ 
-  \hline
-1 & 1.00 & 0.01 & 59.09 & 59.09 \\ 
-  2 & 2.00 & 0.01 & 35.88 & 94.96 \\ 
-  3 & 3.00 & 0.00 & 5.04 & 100.00 \\ 
-   \hline
+\caption{Perfil das linhas} 
+\begin{tabular}{lcccccc}
+     \toprule
+     \multirow{2}{*}{Saúde mental} & \multicolumn{5}{c}{Status sócio-econômico dos pais} & \multirow{2}{*}{Total} \\ \cmidrule{2-6}
+     & A (alto) & B & C & D & E (baixo) & \\ \midrule
+     Boa & 39,41 & 18,57 & 23,45 & 11,73 & 6,84 & 100,00 \\
+     Presença fraca de sintomas & 31,23 & 17,44 & 23,42 & 16,11 & 11,79 & 100,00 \\
+     Presença moderada de sintomas & 30,94 & 17,96 & 21,27 & 14,92 & 14,92 & 100,00 \\
+     Debilitado & 38,04 & 12,27 & 19,22 & 15,95 & 14,52 & 100,00 \\ \midrule
+     Total & 34,49 & 16,31 & 21,82 & 15,06 & 12,33 & 100,00 \\
+     
+     \bottomrule 
 \end{tabular}
 \end{table}
 
-
-\begin{table}[ht]
+ 
+\begin{table}[h!]
 \centering
-\caption{Perfil das linhas x100}
-\begin{tabular}{rrrrrrr}
-  \hline
- & A (alto) & B & C & D & E (baixo) & V6 \\ 
-  \hline
-1 & 0.39 & 0.19 & 0.23 & 0.12 & 0.07 & 1.00 \\ 
-  2 & 0.31 & 0.17 & 0.23 & 0.16 & 0.12 & 1.00 \\ 
-  3 & 0.31 & 0.18 & 0.21 & 0.15 & 0.15 & 1.00 \\ 
-  4 & 0.38 & 0.12 & 0.19 & 0.16 & 0.15 & 1.00 \\ 
-  5 & 0.34 & 0.16 & 0.22 & 0.15 & 0.12 & 1.00 \\ 
-   \hline
+\caption{Perfil das colunas}
+\begin{tabular}{lcccccc}
+     \toprule
+     \multirow{2}{*}{Saúde mental} & \multicolumn{5}{c}{Status sócio-econômico dos pais} & \multirow{2}{*}{Total} \\ \cmidrule{2-6}
+     & A (alto) & B & C & D & E (baixo) & \\ \midrule
+     Boa & 19,93 & 19,86 & 18,75 & 13,58 & 9,68 & 17,44 \\
+     Presença fraca de sintomas & 30,97 & 36,59 & 36,72 & 36,60 & 32,72 & 34,20 \\
+     Presença moderada de sintomas & 18,45 & 22,65 & 20,05 & 20,38 & 24,88 & 20,57 \\
+     Debilitado & 30,64 & 20,91 & 24,48 & 29,43 & 32,72 & 27,78 \\ \midrule
+     Total & 100,00 & 100,00 & 100,00 & 100,00 & 100,00 & 100,00 \\
+     
+     \bottomrule 
 \end{tabular}
 \end{table}
 
+#Análise Inferencial
 
-\begin{table}[ht]
-\centering
-\caption{Perfil das linhas x100}
-\begin{tabular}{rrrrrrr}
-  \hline
- & 1 & 2 & 3 & 4 & 5 & 6 \\ 
-  \hline
-Boa & 0.20 & 0.20 & 0.19 & 0.14 & 0.10 & 0.17 \\ 
-  Fraco & 0.31 & 0.37 & 0.37 & 0.37 & 0.33 & 0.34 \\ 
-  Moderado & 0.18 & 0.23 & 0.20 & 0.20 & 0.25 & 0.21 \\ 
-  Debilitado & 0.31 & 0.21 & 0.24 & 0.29 & 0.33 & 0.28 \\ 
-   & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 \\ 
-   \hline
-\end{tabular}
-\end{table}
+Observando o percentual acumulado na tabela 6(inércia), pode-se observar que as duas componentes são capazes de explicar aproximadamente 94,96% da variabilidade dos dados, o que é um valor considerado satisfatório. Por essa razão, as componentes 1 e 2 foram utilizadas para prosseguir a ánalise.
+
 ```{r, echo=FALSE}
-# Componentes
-resultFCA <- plot(resultCA, xlab = "componente 1", ylab = "componente 2")
-biplot(resultFCA$rows, resultFCA$cols, var.axes=FALSE, xlab="componente 1", ylab="componente 2", cex=1.2,ylim=c(-0.10,0.20),xlim=c(-0.15,0.20))
-abline(0, 0, lty=2)
-abline(v=0, lty=2)
-
+# Inércia
+resultCA <- ca(tabela_contigencia) #names (result)
+inercia <- summary(resultCA)$scree  
+#xtable(inercia)
 ```
 
+\begin{table}[h!] 
+\centering
+\caption{Inércia} 
+\begin{tabular}{cccc}
+     \toprule
+     Valor singular & Inércia principal & Percentual (\%) & Percentual acumulado (\%) \\ \midrule
+     0,1023 & 0,0105 & 59,09 & 59,09 \\
+     0,0797 & 0,0064 & 35,88 & 94,96 \\
+     0,0299 & 0,0009 & 5,04 & 100,00 \\
+     \bottomrule
+\end{tabular}
+\end{table}
+
+
+Na figura 1, é apresentado o biplot entre as variáveis “saúde mental” e “status socioeconômico”. Pode-se notar que o nível socioeconômico A está mais relacionado com a  saúde mental de nível “Debilitado” e “Boa”, apesar de este último não estar tão relacionado quanto o “Debilitado”. Os níveis B e C estão mais relacionados ao nível “Fraco” de saúde e D e E estão mais relacionados com a condição “Moderado”. Tais informações trazem evidências de que a maior parte das pessoas com saúde mental “Debilitado” e “Boa” apresentam pais com status A; já as pessoas com saúde de nível “Fraco” possuem prevalência de seus pais em níveis socioeconômicos B e C; por fim, os pais das pessoas de saúde “Moderado” dominam os status D e E.
+
+```{r, echo=FALSE, fig.cap="Biplot"}
+# Componentes
+my_cols <- c("black", "ivory4") 
+resultFCA <- plot(resultCA, xlab = "componente 1", ylab = "componente 2", col=my_cols)
+# biplot(resultFCA$rows, resultFCA$cols, var.axes=FALSE, xlab="componente 1", ylab="componente 2", cex=1.2,ylim=c(-0.10,0.20),xlim=c(-0.15,0.20),col=my_cols[])
+# abline(0, 0, lty=2)
+# abline(v=0, lty=2)
+```
+
+#Conclusão
+
+#Referências 
+
+1. AZEVEDO, C. L. N. (2017). **Notas de Aula - Métodos em Análise Multivariada**. Disponível em < http://www.ime.unicamp.br/~cnaber/Material_AM_2S_2017.htm >. 
+2. JOHNSON, R. A., WICHERN, D. W. (2002). **Applied Multivariate Statistical Analysis**, $5^a$ edição, Upper Saddle River, NJ: Prentice-Hall. 
+3. R CORE TEAM (2017). **R: A language and environment for statistical computing**. R Foundation for Statistical Computing, Viena,
+  Áustria. Disponível em < https://www.R-project.org/ >. 
+4. AZEVEDO, C. L. N. (2017). **ACaux.r - Função auxiliar para gerar os perfis das linhas e colunas**. Disponível em < http://www.ime.unicamp.br/~cnaber/ACaux.r >. 
